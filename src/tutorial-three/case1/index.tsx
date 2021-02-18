@@ -2,7 +2,7 @@
  * @Author: lyf
  * @Date: 2021-02-01 15:24:53
  * @LastEditors: lyf
- * @LastEditTime: 2021-02-01 19:24:40
+ * @LastEditTime: 2021-02-18 19:59:55
  * @Description: 基础要素
  * @FilePath: /cook-electron/Users/a58/iworkspace/3d-case/src/tutorial-three/case1/index.tsx
  */
@@ -65,6 +65,11 @@ const ThreeCase1 = () => {
     }
 
     animate()
+
+    return () => {
+      const gui = document.querySelector('.dg.ac')
+      gui && gui.remove()
+    }
   }, [])
 
   return (

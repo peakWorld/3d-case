@@ -2,8 +2,8 @@
  * @Author: lyf
  * @Date: 2021-02-01 19:26:11
  * @LastEditors: lyf
- * @LastEditTime: 2021-02-02 16:45:34
- * @Description: 动画
+ * @LastEditTime: 2021-02-18 20:02:42
+ * @Description: 动画 和 雾化
  * @FilePath: /cook-electron/Users/a58/iworkspace/3d-case/src/tutorial-three/case2/index.tsx
  */
 import React, { useEffect, useRef } from 'react';
@@ -50,7 +50,7 @@ const ThreeCase2 = () => {
     const renderer = new WebGLRenderer({ antialias: true })
     renderer.setSize(window.innerWidth, window.innerHeight) // 屏幕宽度
     renderer.setClearColor(new Color(0xeeeeee)) // 屏幕背景
-    // renderer.setPixelRatio(window.devicePixelRatio)
+    renderer.setPixelRatio(window.devicePixelRatio) // 设置设备像素比。避免HiDPI设备上绘图模糊
     dom.appendChild(renderer.domElement)
 
     // 像机
@@ -112,6 +112,11 @@ const ThreeCase2 = () => {
     }
 
     animate()
+
+    return () => {
+      const gui = document.querySelector('.dg.ac')
+      gui && gui.remove()
+    }
   }, [])
 
   return (
