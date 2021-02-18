@@ -2,7 +2,22 @@ const { merge } = require('webpack-merge')
 const webpack = require('webpack')
 const path = require('path')
 const defaultConfig = require('./webpack.config.base.js')
-const { OUTPUT_PATH } = require('./constants')
+const { OUTPUT_PATH, isLocal } = require('./constants')
+
+// 开发配置
+const devServer = {
+  host: '0.0.0.0',
+  port: 9888,
+  hot: true,
+  open: 'Google Chrome',
+  contentBase: OUTPUT_PATH,
+}
+
+// wsl2配置
+if (isLocal) {
+  devServer.host = 'localhost'
+  delete devServer.open
+}
 
 module.exports = merge(defaultConfig, {
   mode: 'development',
@@ -29,13 +44,7 @@ module.exports = merge(defaultConfig, {
       }
     ]
   },
-  devServer: {
-    host: '0.0.0.0',
-    port: 9888,
-    hot: true,
-    open: 'Google Chrome',
-    contentBase: OUTPUT_PATH,
-  },
+  devServer,
   plugins: [
     new webpack.HotModuleReplacementPlugin(),
     new webpack.DllReferencePlugin({

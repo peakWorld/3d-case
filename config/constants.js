@@ -14,11 +14,13 @@ const SRC_PATH = path.join(ROOT_PATH, './src')
 
 const isDev = process.env.NODE_ENV === 'development'
 const isPro = process.env.NODE_ENV === 'production'
+const isLocal = process.env.NODE_ENV === 'local'
 
 module.exports = {
   ROOT_PATH,
   OUTPUT_PATH,
   SRC_PATH,
   isDev,
-  isPro
+  isPro,
+  isLocal
 }

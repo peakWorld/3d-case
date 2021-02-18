@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "cross-env NODE_ENV=development webpack serve --config ./config/webpack.config.dev.js",
+    "local": "cross-env NODE_ENV=local webpack serve --config ./config/webpack.config.dev.js",
     "build": "webpack --config ./config/webpack.config.prod.js",
     "dll": "webpack --config ./config/webpack.config.dll.js"
   },
