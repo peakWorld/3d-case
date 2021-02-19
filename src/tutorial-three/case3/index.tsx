@@ -2,7 +2,7 @@
  * @Author: lyf
  * @Date: 2021-02-02 16:54:55
  * @LastEditors: lyf
- * @LastEditTime: 2021-02-18 20:13:41
+ * @LastEditTime: 2021-02-19 19:36:19
  * @Description: 阴影 和 纹理
  * @FilePath: /cook-electron/Users/a58/iworkspace/3d-case/src/tutorial-three/case3/index.tsx
  */
@@ -20,8 +20,9 @@ import {
   MeshLambertMaterial,
   Mesh,
   Color,
-  AxesHelper
-} from 'three';
+  AxesHelper,
+  PCFSoftShadowMap
+} from 'three'
 
 const ThreeCase3 = () => {
   const ref = useRef<HTMLDivElement>(null)
@@ -29,17 +30,23 @@ const ThreeCase3 = () => {
   useEffect(() => {
     const dom = ref.current as HTMLDivElement
     const stats = createStats({ dom })
+    let step = 0
     
     // 渲染
-    const renderer = new WebGLRenderer({ antialias: true })
+    const renderer = new WebGLRenderer({
+      antialias: true
+    })
     renderer.setSize(window.innerWidth, window.innerHeight)
     renderer.setClearColor(new Color(0xeeeeee), 0.5)
     renderer.setPixelRatio(window.devicePixelRatio)
+    // 开启阴影
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = PCFSoftShadowMap;
     dom.appendChild(renderer.domElement)
 
     // 相机
-    const camera = new PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000)
-    camera.position.set(-30, 40, 30)
+    const camera = new PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000)
+    camera.position.set(-40, 40, 30)
     camera.up.set(0, 1, 0);
     camera.lookAt(0, 0, 0)
 
@@ -53,6 +60,9 @@ const ThreeCase3 = () => {
     const spot = new SpotLight(0xffffff)
     spot.position.set(-40, 60, 10)
     spot.castShadow = true
+    // 值越大(必须为2的倍数), 阴影质量越好
+    spot.shadow.mapSize.width = 2048;
+    spot.shadow.mapSize.height = 2048;
     scene.add(ambient)
     scene.add(spot)
 
@@ -76,7 +86,7 @@ const ThreeCase3 = () => {
       new SphereGeometry( 4, 20, 20 ),
       new MeshLambertMaterial({ color: 0x7777ff })
     );
-    sphere.position.set(20,4,2)
+    sphere.position.set(20, 4, 2)
     sphere.castShadow = true
 
     scene.add(box)
@@ -87,10 +97,23 @@ const ThreeCase3 = () => {
       renderer.render(scene, camera)
       stats.update()
 
+      box.rotation.x += 0.02
+      box.rotation.y += 0.02
+      box.rotation.z += 0.02
+
+      step += 0.02
+      sphere.position.x = 20 + 10 * Math.cos(step); 
+      sphere.position.y = 2 + 10 * Math.abs(Math.sin(step));
+
       requestAnimationFrame(animate)
     }
 
     animate()
+
+    return () => {
+      const gui = document.querySelector('.dg.ac')
+      gui && gui.remove()
+    }
   }, [])
 
   return (
