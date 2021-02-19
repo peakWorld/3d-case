@@ -2,9 +2,9 @@
  * @Author: lyf
  * @Date: 2021-02-19 19:28:39
  * @LastEditors: lyf
- * @LastEditTime: 2021-02-19 19:34:40
+ * @LastEditTime: 2021-02-19 20:04:00
  * @Description: 材质 和 分屏
- * @FilePath: /cook-electron/Users/a58/iworkspace/3d-case/src/tutorial-three/case4/index.tsx
+ * @FilePath: /cook-electron/Users/a58/iworkspace/3d-case/src/template.tsx
  */
 import React, { useRef, useEffect } from 'react';
 import { createStats } from '@utils/help'
@@ -33,6 +33,7 @@ const ThreeCase4 = () => {
     const renderer = new WebGLRenderer({ antialias: true })
     renderer.setSize(window.innerWidth, window.innerHeight)
     renderer.setClearColor(new Color(0xeeeeee), 0.5)
+    renderer.setPixelRatio(window.devicePixelRatio)
     dom.appendChild(renderer.domElement)
 
     // 相机
