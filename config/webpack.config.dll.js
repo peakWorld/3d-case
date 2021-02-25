@@ -4,7 +4,7 @@ const { OUTPUT_PATH } = require('./constants')
 
 module.exports = {
   entry: {
-    vendor: ['react', 'react-dom', 'react-router-dom', 'three'],
+    vendor: ['react', 'react-dom', 'react-router-dom'],
   },
   output: {
     path: OUTPUT_PATH,

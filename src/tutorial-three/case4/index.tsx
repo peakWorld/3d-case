@@ -2,7 +2,7 @@
  * @Author: lyf
  * @Date: 2021-02-19 19:28:39
  * @LastEditors: lyf
- * @LastEditTime: 2021-02-19 20:21:14
+ * @LastEditTime: 2021-02-25 11:43:38
  * @Description: 材质 和 分屏
  * @FilePath: /cook-electron/Users/a58/iworkspace/3d-case/src/tutorial-three/case4/index.tsx
  */
@@ -14,19 +14,23 @@ import {
   PerspectiveCamera,
   AmbientLight,
   DirectionalLight,
+  BufferGeometry,
   BoxGeometry,
-  PlaneGeometry,
+  BufferAttribute,
+  Uint16BufferAttribute,
   SphereGeometry,
-  MeshLambertMaterial,
+  MeshBasicMaterial,
   MeshNormalMaterial,
+  MeshLambertMaterial,
+  ShaderMaterial,
   Mesh,
   Color,
   Vector3,
   AxesHelper,
-  ArrowHelper,
 } from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { VertexNormalsHelper } from 'three/examples/jsm/helpers/VertexNormalsHelper'
+import { position, color, normal, indexData, vShader, fShader } from './data'
 
 
 const ThreeCase4 = () => {
@@ -62,18 +66,31 @@ const ThreeCase4 = () => {
       // 光线
       const ambient = new AmbientLight(0x404040)
       scene.add(ambient)
-      const light = new DirectionalLight(0xffffff)
-			light.position.set( 0, 0, 1 )
-      scene.add(light)
       
       // 物体
       const box = new Mesh(
         new BoxGeometry(4, 4, 4),
-        new MeshLambertMaterial({ color: 0xff0000 })
+        [
+          new MeshLambertMaterial({ color: 0xffff00 }),
+          new MeshBasicMaterial({ color: 0xff0000 }), // basic材质不受光照影响
+          new MeshBasicMaterial({ color: 0xffffff }),
+          new MeshBasicMaterial({ color: 0x00ff00 }),
+          new MeshBasicMaterial({ color: 0x00ffff }),
+          new MeshBasicMaterial({ color: 0x000000 }),
+        ]
       )
+      box.position.set(-6, 0, 0)
       scene.add(box)
 
-      return { scene, camera, control }
+      const geometry = new SphereGeometry(4, 20, 20)
+      const material = new MeshNormalMaterial()
+      const sphere = new Mesh(geometry, material)
+      sphere.position.set(6, 0, 0)
+      scene.add(sphere)
+      const helper = new VertexNormalsHelper(sphere, 2, 0x00ff00)
+      scene.add(helper)
+
+      return { scene, camera, control, helper }
     }
 
     function sceneBottom () {
@@ -86,8 +103,8 @@ const ThreeCase4 = () => {
 
       // 场景
       const scene = new Scene()
-      const axesHelper = new AxesHelper( 20 );
-      scene.add( axesHelper );
+      // const axesHelper = new AxesHelper( 20 );
+      // scene.add( axesHelper );
 
       // 光线
       const ambient = new AmbientLight(0x404040)
@@ -97,23 +114,37 @@ const ThreeCase4 = () => {
       scene.add(light)
       
       // 物体
-      const sphere = new Mesh(
-        new SphereGeometry( 4, 20, 20 ),
-        new MeshNormalMaterial()
-      )
-      scene.add(sphere)
-      // const normal = sphere.geometry.getAttribute('normal')
-      // const position = sphere.geometry.getAttribute('position')
-      // for (let i = 0; i < normal.count; i++) {
-      //   const hVec = new Vector3(normal.getX(i), normal.getX(i), normal.getX(i))
-      //   const hPos = new Vector3(position.getX(i), position.getX(i), position.getX(i))
-      //   const arrow = new ArrowHelper(hVec.normalize(), hPos, 2, 0x3333ff, 0.5, 0.5)
-      //   scene.add(arrow)
-      // }
-      const helper = new VertexNormalsHelper(sphere, 2, 0x00ff00)
-      scene.add(helper)
-      return { scene, camera, control, helper }
+      const geometry = new BufferGeometry()
+      geometry.setAttribute('position', new BufferAttribute(position, 3))
+      geometry.setAttribute('color', new BufferAttribute(color, 3))
+      geometry.setAttribute('normal', new BufferAttribute(normal, 3))
+      geometry.index = new Uint16BufferAttribute(indexData, 1)
+      // 自定shader
+      const meterial = new ShaderMaterial({
+        uniforms: {
+          light: {
+            value: {
+              color: new Color(0xffffff),
+              position: new Vector3(1, 1, 1)
+            }
+          }
+        },
+        vertexColors: true,
+        vertexShader: vShader,
+        fragmentShader: fShader
+      })
+      const box1 = new Mesh(geometry, meterial)
+      box1.position.set(-2, 0, 0)
+      box1.name = "box-1"
+      const box2 = new Mesh(geometry, new MeshLambertMaterial({ color: 0xffff00 }))
+      box2.position.set(2, 0, 0)
+      box2.name = "box-2"
+
+      scene.add(box1)
+      scene.add(box2)
+      return { scene, camera, control }
     }
+
 
     const top = sceneTop()
     const bottom = sceneBottom()
@@ -122,8 +153,8 @@ const ThreeCase4 = () => {
     function animate () {
       stats.update()
       top.control.update()
+      top.helper.update()
       bottom.control.update()
-      bottom.helper.update()
       
       // 渲染上半屏
       renderer.setScissor(0, hh, w, hh)
@@ -135,6 +166,19 @@ const ThreeCase4 = () => {
       renderer.setScissor(0, 0, w, hh)
       renderer.setViewport(0, 0, w, hh)
       renderer.setClearColor(0x8FBCD4, 1);
+      const box1 = bottom.scene.getObjectByName('box-1')
+      if (box1) {
+        box1.rotation.x += 0.01
+        box1.rotation.y += 0.01
+        box1.rotation.z += 0.01
+      }
+
+      const box2 = bottom.scene.getObjectByName('box-2')
+      if (box2) {
+        box2.rotation.x += 0.02
+        box2.rotation.y += 0.02
+        box2.rotation.z += 0.02
+      }
       renderer.render(bottom.scene, bottom.camera)
 
       requestAnimationFrame(animate)
