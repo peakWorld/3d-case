@@ -8,17 +8,17 @@
 
 * case4 材质 和 分屏
 
-* case5 二维形状、svg、文本
+* case5 点、tween动画、雪碧图
 
-* case6 点、线、组合图形
+* case6 二维形状、svg、文本
 
-* case7 模型加载、模型动画、tween动画
+* case7 纹理
 
-* case8 各种相机
+* case8 模型加载、模型动画、
 
-* case9 物体选中
+* case9 各种相机
 
-* case10 纹理
+* case10 物体选中
 
 * case11 后期处理
 
