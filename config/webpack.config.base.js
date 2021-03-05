@@ -3,6 +3,7 @@ const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
+const CopyPlugin = require("copy-webpack-plugin");
 const { ROOT_PATH, SRC_PATH, OUTPUT_PATH, isPro } = require('./constants');
 
 module.exports = {
@@ -56,6 +57,11 @@ module.exports = {
       inject: 'body',
       template: './index.html'
     }),
+    new CopyPlugin({
+      patterns: [
+        { from: 'assets/webgl/**/*', } // 默认拷贝到output文件夹
+      ]
+    })
     // new  BundleAnalyzerPlugin()
   ]
 }

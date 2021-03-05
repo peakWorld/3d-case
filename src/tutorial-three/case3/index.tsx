@@ -2,8 +2,8 @@
  * @Author: lyf
  * @Date: 2021-02-02 16:54:55
  * @LastEditors: lyf
- * @LastEditTime: 2021-02-19 19:36:19
- * @Description: 阴影 和 纹理
+ * @LastEditTime: 2021-03-04 17:18:10
+ * @Description: 阴影
  * @FilePath: /cook-electron/Users/a58/iworkspace/3d-case/src/tutorial-three/case3/index.tsx
  */
 import React, { useEffect, useRef } from 'react'

@@ -8,16 +8,14 @@
 
 * case4 材质 和 分屏
 
-* case5 点、tween动画、雪碧图
+* case5 点、tween动画、纹理
 
 * case6 二维形状、svg、文本
 
-* case7 纹理
+* case7 模型加载、模型动画
 
-* case8 模型加载、模型动画、
+* case8 物体选中
 
-* case9 物体选中
+* case9 后期处理
 
-* case10 后期处理
-
-* case11 物理特效
+* case10 物理特效

@@ -2,7 +2,7 @@
  * @Author: lyf
  * @Date: 2021-02-19 19:28:39
  * @LastEditors: lyf
- * @LastEditTime: 2021-02-25 11:43:38
+ * @LastEditTime: 2021-03-05 16:01:54
  * @Description: 材质 和 分屏
  * @FilePath: /cook-electron/Users/a58/iworkspace/3d-case/src/tutorial-three/case4/index.tsx
  */
@@ -116,9 +116,11 @@ const ThreeCase4 = () => {
       // 物体
       const geometry = new BufferGeometry()
       geometry.setAttribute('position', new BufferAttribute(position, 3))
-      geometry.setAttribute('color', new BufferAttribute(color, 3))
-      geometry.setAttribute('normal', new BufferAttribute(normal, 3))
-      geometry.index = new Uint16BufferAttribute(indexData, 1)
+        .setAttribute('color', new BufferAttribute(color, 3))
+        .setAttribute('normal', new BufferAttribute(normal, 3))
+        .setIndex( new BufferAttribute(indexData, 1) )
+      // geometry.index = new Uint16BufferAttribute(indexData, 1)
+      
       // 自定shader
       const meterial = new ShaderMaterial({
         uniforms: {
