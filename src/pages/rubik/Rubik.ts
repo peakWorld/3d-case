@@ -161,6 +161,15 @@ export default class Rubik {
     return group
   }
 
+  /**
+   * 获取转动的小方块
+   * @param axis 围绕旋转的轴
+   * @param plus 正逆时针旋转
+   */
+  getAnimationBoxes (axis: Direction, plus: boolean) {
+    const { intersect } = this.state
+  }
+
   doAnimation() {
     const { startPoint, endPoint, normal, group } = this.state
     const { x, nx, y, ny, z, nz } = this.direction
@@ -185,24 +194,69 @@ export default class Rubik {
       switch (minAngle) {
         case angles.x: // 沿着x轴正方向滑动(可滑动的面只有四个)
           if (normal.equals(y)) { // 滑动面的法向量是y轴正方向, 即沿着z轴顺时针旋转
-            // TODO
+            this.getAnimationBoxes(Direction.z, true)
           } else if (normal.equals(ny)) { // 滑动面的法向量是y轴负方向, 即沿着z轴逆时针旋转
-            // TODO
+            this.getAnimationBoxes(Direction.z, false)
           } else if (normal.equals(z)) { // 滑动面的法向量是z轴正方向, 即沿着y轴逆时针旋转
-            // TODO
+            this.getAnimationBoxes(Direction.y, false)
           } else if (normal.equals(nz)){ // 滑动面的法向量是z轴负方向, 即沿着y轴顺时针旋转 
-            // TODO 
+            this.getAnimationBoxes(Direction.y, true)
           }
           break
         case angles.nx: // 沿着x轴负方向滑动
+          if (normal.equals(y)) { // 沿着z轴逆时针旋转
+            this.getAnimationBoxes(Direction.z, false)
+          } else if (normal.equals(ny)) { // 沿着z轴顺时针旋转
+            this.getAnimationBoxes(Direction.z, true)
+          } else if (normal.equals(z)) { // 沿着y轴顺时针旋转 
+            this.getAnimationBoxes(Direction.y, true)
+          } else if (normal.equals(nz)) { // 沿着y轴逆时针旋转 
+            this.getAnimationBoxes(Direction.y, false)
+          }
           break
         case angles.y:
+          if (normal.equals(x)) {
+            this.getAnimationBoxes(Direction.z, false)
+          } else if (normal.equals(nx)) {
+            this.getAnimationBoxes(Direction.z, true)
+          } else if (normal.equals(z)) {
+            this.getAnimationBoxes(Direction.x, true)
+          } else if (normal.equals(nz)) { 
+            this.getAnimationBoxes(Direction.x, false)
+          }
           break
         case angles.ny:
+          if (normal.equals(x)) {
+            this.getAnimationBoxes(Direction.z, true)
+          } else if (normal.equals(nx)) {
+            this.getAnimationBoxes(Direction.z, false)
+          } else if (normal.equals(z)) {
+            this.getAnimationBoxes(Direction.x, false)
+          } else if (normal.equals(nz)) { 
+            this.getAnimationBoxes(Direction.x, true)
+          }
           break
         case angles.z:
+          if (normal.equals(x)) {
+            this.getAnimationBoxes(Direction.y, true)
+          } else if (normal.equals(nx)) {
+            this.getAnimationBoxes(Direction.y, false)
+          } else if (normal.equals(y)) {
+            this.getAnimationBoxes(Direction.x, false)
+          } else if (normal.equals(ny)) { 
+            this.getAnimationBoxes(Direction.x, true)
+          }
           break
         case angles.nz:
+          if (normal.equals(x)) {
+            this.getAnimationBoxes(Direction.y, false)
+          } else if (normal.equals(nx)) {
+            this.getAnimationBoxes(Direction.y, true)
+          } else if (normal.equals(y)) {
+            this.getAnimationBoxes(Direction.x, true)
+          } else if (normal.equals(ny)) { 
+            this.getAnimationBoxes(Direction.x, false)
+          }
           break
       }
   }
