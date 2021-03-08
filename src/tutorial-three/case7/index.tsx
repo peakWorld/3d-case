@@ -2,8 +2,8 @@
  * @Author: lyf
  * @Date: 2021-02-19 19:28:39
  * @LastEditors: lyf
- * @LastEditTime: 2021-03-05 17:47:57
- * @Description: 模型加载、模型动画
+ * @LastEditTime: 2021-03-08 19:08:59
+ * @Description: 后期处理
  * @FilePath: /cook-electron/Users/a58/iworkspace/3d-case/src/tutorial-three/case7/index.tsx
  */
 import React, { useRef, useEffect } from 'react';
@@ -13,14 +13,11 @@ import {
   Scene,
   PerspectiveCamera,
   AmbientLight,
-  BoxGeometry,
-  PlaneGeometry,
-  SphereGeometry,
-  MeshLambertMaterial,
-  Mesh,
   Color,
   AxesHelper,
 } from 'three'
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer'
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
 
 const ThreeCase7 = () => {
   const ref = useRef<HTMLDivElement>(null)
@@ -52,6 +49,12 @@ const ThreeCase7 = () => {
     scene.add(ambient)
 
     // 物体
+
+
+    // 后期处理
+    const cpmposer = new EffectComposer(renderer)
+    const renderPass = new RenderPass(scene, camera)
+    cpmposer.addPass(renderPass)
 
     // 动画
     function animate () {

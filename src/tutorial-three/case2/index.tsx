@@ -2,8 +2,8 @@
  * @Author: lyf
  * @Date: 2021-02-01 19:26:11
  * @LastEditors: lyf
- * @LastEditTime: 2021-02-18 20:02:42
- * @Description: 动画 和 雾化
+ * @LastEditTime: 2021-03-08 10:49:17
+ * @Description: 动画、雾化 和 选中
  * @FilePath: /cook-electron/Users/a58/iworkspace/3d-case/src/tutorial-three/case2/index.tsx
  */
 import React, { useEffect, useRef } from 'react';
@@ -19,7 +19,10 @@ import {
   Mesh,
   MeshLambertMaterial,
   Group,
-  Color
+  Color,
+  Vector2,
+  Material,
+  Raycaster
 } from 'three';
 
 const ThreeCase2 = () => {
@@ -64,7 +67,7 @@ const ThreeCase2 = () => {
     scene.fog = new Fog(0xffffff, 0.1, 40) // 雾化
 
     // 光照
-    const light = new AmbientLight(0x404040)
+    const light = new AmbientLight(0xffffff)
     scene.add(light)
     
     const group = new Group()
@@ -112,6 +115,29 @@ const ThreeCase2 = () => {
     }
 
     animate()
+
+    // 选中物体
+    const raycaster = new Raycaster()
+    
+    function normalVector (x: number, y: number) {
+      const nx = ( x / window.innerWidth ) * 2 - 1
+      const ny = - ( y / window.innerHeight ) * 2 + 1
+      return new Vector2(nx, ny)
+    }
+
+    const handleTouchStart = (evt: TouchEvent) => {
+      const { clientX, clientY } = evt.touches[0]
+      raycaster.setFromCamera(normalVector(clientX, clientY), camera)
+      const intersects = raycaster.intersectObjects(scene.children, true)
+      if (intersects.length && intersects[0].object.type === 'Mesh') {
+        const mesh = (intersects[0].object as Mesh)
+        const material = mesh.material as MeshLambertMaterial
+        material.color.setHex(0xff0000)
+        console.log(mesh)
+      }
+    }
+
+    window.addEventListener('touchstart', handleTouchStart, false);
 
     return () => {
       const gui = document.querySelector('.dg.ac')

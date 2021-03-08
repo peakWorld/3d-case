@@ -2,7 +2,7 @@
  * @Author: lyf
  * @Date: 2021-02-19 19:28:39
  * @LastEditors: lyf
- * @LastEditTime: 2021-03-04 17:12:25
+ * @LastEditTime: 2021-03-08 16:14:41
  * @Description: 点、popmotion动画、纹理贴图
  * @FilePath: /cook-electron/Users/a58/iworkspace/3d-case/src/tutorial-three/case5/index.tsx
  */
@@ -22,7 +22,11 @@ import {
   Points,
   AxesHelper,
   AdditiveBlending,
-  Vector3
+  Vector3,
+  CubeTextureLoader,
+  BoxGeometry,
+  Mesh,
+  MeshBasicMaterial
 } from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { GUI } from 'three/examples/jsm/libs/dat.gui.module.js';
@@ -34,12 +38,6 @@ const ThreeCase5 = () => {
   useEffect(() => {
     const dom = ref.current as HTMLDivElement
     const stats = createStats({ dom })
-    // const controller = { x: 100, y: 100, z: 100 }
-    // const gui = new GUI()
-    // gui.addFolder('操作')
-    // gui.add(controller, 'x', -1000, 1000)
-    // gui.add(controller, 'y', -1000, 1000)
-    // gui.add(controller, 'z', -1000, 1000)
 
     const w = window.innerWidth
     const h = window.innerHeight
@@ -47,7 +45,7 @@ const ThreeCase5 = () => {
 
     // 渲染器
     const renderer = new WebGLRenderer({ antialias: true })
-    renderer.setSize(window.innerWidth, window.innerHeight)
+    renderer.setSize(w, h)
     renderer.setPixelRatio(window.devicePixelRatio)
     renderer.setScissorTest(true) // 开启剪裁检测
     dom.appendChild(renderer.domElement)
@@ -69,24 +67,37 @@ const ThreeCase5 = () => {
       const ambient = new AmbientLight(0x404040)
       scene.add(ambient)
 
-      const geometry = new SphereGeometry(1, 64, 64)
-      const material = new PointsMaterial({ size: 0.01 })
-      const points = new Points(geometry, material)
-      scene.add(points)
+      // 点和popmotion动画
+      // const geometry = new SphereGeometry(1, 64, 64)
+      // const material = new PointsMaterial({ size: 0.01 })
+      // const points = new Points(geometry, material)
+      // scene.add(points)
+      // animate({
+      //   from: 0,
+      //   to: 1,
+      //   duration: 6000,
+      //   repeat: Infinity,
+      //   repeatType: 'reverse',
+      //   ease: steps(30),
+      //   onUpdate: pos => {
+      //     // material.color.setRGB(pos, pos, pos)
+      //     material.color.setHex(0xffffff * pos)
+      //   }
+      // })
 
-      animate({
-        from: 0,
-        to: 1,
-        duration: 6000,
-        repeat: Infinity,
-        repeatType: 'reverse',
-        ease: steps(30),
-        onUpdate: pos => {
-          // material.color.setRGB(pos, pos, pos)
-          // material.color.setHex(0xffffff * pos)
-        }
-      })
-
+      // 环境贴图
+      camera.position.set(20, 20, 20)
+      scene.background = new CubeTextureLoader()
+        .setPath('/assets/webgl/img/three-case5/parliament/')
+        .load([
+          'posx.jpg', 'negx.jpg', 'posy.jpg',
+          'negy.jpg', 'posz.jpg' , 'negz.jpg'
+        ])
+      const sphere = new Mesh(
+        new SphereGeometry(5, 20, 20),
+        new MeshBasicMaterial({ envMap: scene.background })
+      )
+      scene.add(sphere)
       return { scene, camera, control }
     }
 
@@ -167,19 +178,28 @@ const ThreeCase5 = () => {
       // 渲染下半屏
       bottom.scene.traverse((obj) => {
         if (obj instanceof Points) {
-          const res = []
-          const { array, count, itemSize } = obj.geometry.getAttribute('position').clone()
+          // const res = []
+          // const { array, count, itemSize } = obj.geometry.getAttribute('position').clone()
+          // for (let i = 0; i < count; i++) {
+          //   let y = array[i * itemSize + 1] - Math.random() * 0.3
+          //   y = y > -200 ? y : Math.random() * 400 - 200
+          //   const vector = new Vector3(
+          //     array[i * itemSize],
+          //     y,
+          //     array[i * itemSize + 2]
+          //   )
+          //   res.push(vector)
+          // }
+          // obj.geometry.setFromPoints(res)
+
+          const { array, count, itemSize } = obj.geometry.getAttribute('position')
+          const arr = array as Array<number>
           for (let i = 0; i < count; i++) {
-            let y = array[i * itemSize + 1] - Math.random() * 0.3
-            y = y > -200 ? y : Math.random() * 400 - 200
-            const vector = new Vector3(
-              array[i * itemSize],
-              y,
-              array[i * itemSize + 2]
-            )
-            res.push(vector)
+            const y = array[i * itemSize + 1] - Math.random() * 0.3
+            arr[i * itemSize + 1] = y > -200 ? y : Math.random() * 400 - 200
           }
-          obj.geometry.setFromPoints(res)
+          obj.geometry.attributes.position.needsUpdate = true
+          obj.geometry.setDrawRange(0, Infinity)
         }
       })
 

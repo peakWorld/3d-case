@@ -1,4 +1,3 @@
-import { normal } from './../../tutorial-three/case4/data';
 import {
   Vector3,
   Group,
@@ -224,7 +223,7 @@ export default class Rubik {
       const { isRotating } = this.state
       if (!isRotating) {
         const { clientX, clientY } = evt.touches[0]
-        raycaster.setFromCamera(normalVector(clientX, clientY), camera )
+        raycaster.setFromCamera(normalVector(clientX, clientY), camera)
         const intersects = raycaster.intersectObjects(scene.children, true)
         console.log(intersects)
         if (intersects.length > 2) {
