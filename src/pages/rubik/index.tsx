@@ -48,8 +48,8 @@ const RubikCase = () => {
 
     // 场景
     const scene = new Scene()
-    const axesHelper = new AxesHelper(200)
-    scene.add( axesHelper )
+    // const axesHelper = new AxesHelper(200)
+    // scene.add( axesHelper )
 
     // 物体
     const boxes = rubik.models()
