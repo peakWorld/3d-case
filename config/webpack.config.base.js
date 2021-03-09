@@ -52,15 +52,20 @@ module.exports = {
     ]
   },
   plugins: [
+    new CopyPlugin({
+      patterns: [
+        { from: 'assets/webgl/**/*', }, // 默认拷贝到output文件夹
+        {
+          context:'src/workers', // context + from 为待拷贝路径, 但是context路径不会拷贝到结果文件夹中
+          from: '**/*',
+          to: 'workers'
+        }
+      ]
+    }),
     new HtmlWebpackPlugin({
       env: isPro,
       inject: 'body',
       template: './index.html'
-    }),
-    new CopyPlugin({
-      patterns: [
-        { from: 'assets/webgl/**/*', } // 默认拷贝到output文件夹
-      ]
     })
     // new  BundleAnalyzerPlugin()
   ]
