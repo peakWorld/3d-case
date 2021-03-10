@@ -9,8 +9,11 @@ import {
   Raycaster,
   Camera,
   Scene,
-  Object3D
+  Object3D,
+  Matrix4
 } from 'three'
+import { interval } from '@utils/time'
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 
 interface Configs {
   origin: Vector3
@@ -36,6 +39,7 @@ interface State {
   initPosIndex: PosIndex[] /* 初始盒子的顺序 */
 }
 
+/* 6种方向 */
 enum Direction {
   x, nx, y, ny, z, nz
 }
@@ -67,7 +71,11 @@ export default class Rubik {
     nz: new Vector3(0, 0, -1),
   }
 
+  /* 魔方可旋转方向, 在全局坐标系中的位置 */
   private globalDirection: Record<DirectionItem, Vector3> = {} as Record<DirectionItem, Vector3>
+
+  /* 魔方原点, 在全局坐标系中的位置 */
+  private globalOrigin: Vector3 = new Vector3()
 
   constructor (configs: Partial<Configs> = {}) {
     this.configs = { ...Rubik.defaultConfigs, ...configs }
@@ -195,14 +203,13 @@ export default class Rubik {
     for (let i = 0; i < boxes.length; i++) {
       const box = boxes[i]
       for (let j = 0; j < initPosIndex.length; j++) {
-        const { pos, index } = initPosIndex[i]
+        const { pos, index } = initPosIndex[j]
         if (this.comparePos(box.position, pos)) {
           box.userData.index = index
         }
       }
     }
   }
-
 
   /**
    * 获取魔方可转动方向在全局的位置
@@ -222,15 +229,40 @@ export default class Rubik {
         return res
       }, {} as any) as Record<DirectionItem, Vector3>
     this.globalDirection = globalDirection
+    this.globalOrigin = globalOrigin
     return globalDirection
   }
 
   /**
-   * 获取转动的小方块
+   * 围绕 穿过某一点的向量 旋转
+   * https://blog.csdn.net/csxiaoshui/article/details/65446125
+   * 
+   * https://krasjet.github.io/quaternion/quaternion.pdf
+   */
+  rotateAroundWorldAxis(pos: Vector3, vector: Vector3, rad: number) {
+    vector.normalize()
+    const u = vector.x
+    const v = vector.y
+    const w = vector.z
+    const a = pos.x
+    const b = pos.y
+    const c = pos.z
+    const matrix4 = new Matrix4()
+    matrix4.set(
+      u * u + (v * v + w * w) * Math.cos(rad), u * v * (1 - Math.cos(rad)) - w * Math.sin(rad), u * w * (1 - Math.cos(rad)) + v * Math.sin(rad), (a * (v * v + w * w) - u * (b * v + c * w)) * (1 - Math.cos(rad)) + (b * w - c * v) * Math.sin(rad),
+      u * v * (1 - Math.cos(rad)) + w * Math.sin(rad), v * v + (u * u + w * w) * Math.cos(rad), v * w * (1 - Math.cos(rad)) - u * Math.sin(rad), (b * (u * u + w * w) - v * (a * u + c * w)) * (1 - Math.cos(rad)) + (c * u - a * w) * Math.sin(rad),
+      u * w * (1 - Math.cos(rad)) - v * Math.sin(rad), v * w * (1 - Math.cos(rad)) + u * Math.sin(rad), w * w + (u * u + v * v) * Math.cos(rad), (c * (u * u + v * v) - w * (a * u + b * v)) * (1 - Math.cos(rad)) + (a * v - b * u) * Math.sin(rad),
+      0, 0, 0, 1
+    )
+    return matrix4
+}
+
+  /**
+   * 魔方转动
    * @param axis 围绕旋转的轴
    * @param plus 正逆时针旋转
    */
-  getAnimationBoxes (axis: Direction, plus: boolean) {
+  doRotating (axis: Direction, plus: boolean) {
     const { intersect, boxes } = this.state
     const { size } = this.configs
     const { index } = intersect.userData
@@ -276,18 +308,29 @@ export default class Rubik {
         }
         break
     }
-    cubes.forEach((cube) => {
-      cube.rotateOnWorldAxis(roateAxis, plus ? -Math.PI / 2 : Math.PI / 2)
-    })
 
-    this.updateBoxesIndex()
+    // 转动
+    interval(
+      500,
+      (percent) => {
+        const rand = Math.PI / 2 * (plus ? -percent : percent)
+        const matrix = this.rotateAroundWorldAxis(this.globalOrigin, roateAxis, rand)
+        cubes.forEach((cube) => {
+          cube.applyMatrix4(matrix)
+        })
+      },
+      () => {
+        this.updateBoxesIndex()
+        this.state.isRotating = false
+      }
+    )
   }
 
   /**
    * 动画开始
    */
   doAnimation() {
-    const { startPoint, endPoint, normal, group } = this.state
+    const { startPoint, endPoint, normal } = this.state
     const { x, nx, y, ny, z, nz } = this.direction
     // 全局坐标系中 移动方向
     const moveVector = endPoint.sub(startPoint)
@@ -305,68 +348,68 @@ export default class Rubik {
     switch (minAngle) {
       case angles.x: // 沿着x轴正方向滑动(可滑动的面只有四个)
         if (normal.equals(y)) { // 滑动面的法向量是y轴正方向, 即沿着z轴顺时针旋转
-          this.getAnimationBoxes(Direction.z, true)
+          this.doRotating(Direction.z, true)
         } else if (normal.equals(ny)) { // 滑动面的法向量是y轴负方向, 即沿着z轴逆时针旋转
-          this.getAnimationBoxes(Direction.z, false)
+          this.doRotating(Direction.z, false)
         } else if (normal.equals(z)) { // 滑动面的法向量是z轴正方向, 即沿着y轴逆时针旋转
-          this.getAnimationBoxes(Direction.y, false)
+          this.doRotating(Direction.y, false)
         } else if (normal.equals(nz)){ // 滑动面的法向量是z轴负方向, 即沿着y轴顺时针旋转 
-          this.getAnimationBoxes(Direction.y, true)
+          this.doRotating(Direction.y, true)
         }
         break
       case angles.nx:
         if (normal.equals(y)) {
-          this.getAnimationBoxes(Direction.z, false)
+          this.doRotating(Direction.z, false)
         } else if (normal.equals(ny)) {
-          this.getAnimationBoxes(Direction.z, true)
+          this.doRotating(Direction.z, true)
         } else if (normal.equals(z)) { 
-          this.getAnimationBoxes(Direction.y, true)
+          this.doRotating(Direction.y, true)
         } else if (normal.equals(nz)) {
-          this.getAnimationBoxes(Direction.y, false)
+          this.doRotating(Direction.y, false)
         }
         break
       case angles.y:
         if (normal.equals(x)) {
-          this.getAnimationBoxes(Direction.z, false)
+          this.doRotating(Direction.z, false)
         } else if (normal.equals(nx)) {
-          this.getAnimationBoxes(Direction.z, true)
+          this.doRotating(Direction.z, true)
         } else if (normal.equals(z)) {
-          this.getAnimationBoxes(Direction.x, true)
+          this.doRotating(Direction.x, true)
         } else if (normal.equals(nz)) { 
-          this.getAnimationBoxes(Direction.x, false)
+          this.doRotating(Direction.x, false)
         }
         break
       case angles.ny:
         if (normal.equals(x)) {
-          this.getAnimationBoxes(Direction.z, true)
+          this.doRotating(Direction.z, true)
         } else if (normal.equals(nx)) {
-          this.getAnimationBoxes(Direction.z, false)
+          this.doRotating(Direction.z, false)
         } else if (normal.equals(z)) {
-          this.getAnimationBoxes(Direction.x, false)
+          this.doRotating(Direction.x, false)
         } else if (normal.equals(nz)) { 
-          this.getAnimationBoxes(Direction.x, true)
+          this.doRotating(Direction.x, true)
         }
         break
       case angles.z:
         if (normal.equals(x)) {
-          this.getAnimationBoxes(Direction.y, true)
+          this.doRotating(Direction.y, true)
         } else if (normal.equals(nx)) {
-          this.getAnimationBoxes(Direction.y, false)
+          this.doRotating(Direction.y, false)
         } else if (normal.equals(y)) {
-          this.getAnimationBoxes(Direction.x, false)
+          this.doRotating(Direction.x, false)
         } else if (normal.equals(ny)) { 
-          this.getAnimationBoxes(Direction.x, true)
+          this.doRotating(Direction.x, true)
         }
         break
       case angles.nz:
         if (normal.equals(x)) {
-          this.getAnimationBoxes(Direction.y, false)
+          this.doRotating(Direction.y, false)
         } else if (normal.equals(nx)) {
-          this.getAnimationBoxes(Direction.y, true)
+          this.doRotating(Direction.y, true)
         } else if (normal.equals(y)) {
-          this.getAnimationBoxes(Direction.x, true)
+          this.doRotating(Direction.x, true)
         } else if (normal.equals(ny)) { 
-          this.getAnimationBoxes(Direction.x, false)
+          this.doRotating(Direction.x, false)
         }
         break
     }
@@ -407,6 +450,7 @@ export default class Rubik {
         if (intersects.length) {
           this.state.endPoint = intersects[0].point
           if (!startPoint.equals(this.state.endPoint)) {
+            this.state.isRotating = true
             this.doAnimation()
           }
         }

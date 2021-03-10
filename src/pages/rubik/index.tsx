@@ -2,7 +2,7 @@
  * @Author: lyf
  * @Date: 2021-02-01 10:49:32
  * @LastEditors: lyf
- * @LastEditTime: 2021-03-05 19:10:11
+ * @LastEditTime: 2021-03-10 16:43:15
  * @Description: 3D魔方
  * @FilePath: /cook-electron/Users/a58/iworkspace/3d-case/src/pages/rubik/index.tsx
  */
