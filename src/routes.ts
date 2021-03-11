@@ -2,7 +2,7 @@
  * @Author: lyf
  * @Date: 2021-02-01 10:46:39
  * @LastEditors: lyf
- * @LastEditTime: 2021-03-11 19:16:21
+ * @LastEditTime: 2021-03-11 20:37:43
  * @Description: In User Settings Edit
  * @FilePath: /cook-electron/Users/a58/iworkspace/3d-case/src/routes.ts
  */
@@ -29,5 +29,6 @@ routes.set('2001', { path: '/react/case2', component: tutorialReact.Case2, exact
 routes.set('2001', { path: '/react/case3', component: tutorialReact.Case3, exact: true })
 
 // 3. cases
-routes.set('3001', { path: '/rubik', component: pages.Rubik, exact: true })
-routes.set('3002', { path: '/points', component: pages.Points, exact: true })
+routes.set('3001', { path: '/3d/rubik', component: pages.ThreejsRubik, exact: true })
+routes.set('3002', { path: '/3d/points', component: pages.ThreejsPoints, exact: true })
+routes.set('3003', { path: '/tech/webrtc', component: pages.WebRtc, exact: true })
