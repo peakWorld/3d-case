@@ -2,7 +2,7 @@
  * @Author: lyf
  * @Date: 2021-02-01 10:49:32
  * @LastEditors: lyf
- * @LastEditTime: 2021-03-10 19:33:14
+ * @LastEditTime: 2021-03-11 17:26:09
  * @Description: 3D魔方
  * @FilePath: /cook-electron/Users/a58/iworkspace/3d-case/src/pages/rubik/index.tsx
  */
@@ -13,16 +13,9 @@ import {
   WebGLRenderer,
   Scene,
   PerspectiveCamera,
-  AxesHelper
 } from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import Rubik from './Rubik'
-
-interface Cache {
-  origin: Vector3 /* 魔方原点 */
-  steps: number /* 阶 */
-  len: number /* 阶长 */
-}
 
 const RubikCase = () => {
   const ref = useRef<HTMLDivElement>(null)
@@ -30,7 +23,7 @@ const RubikCase = () => {
   useEffect(() => {
     const dom = ref.current as HTMLDivElement
     const stats = createStats({ dom })
-    const rubik = new Rubik({ size: 3 })
+    const rubik = new Rubik()
 
     // 渲染
     const renderer = new WebGLRenderer({ antialias: true })
@@ -48,8 +41,6 @@ const RubikCase = () => {
 
     // 场景
     const scene = new Scene()
-    // const axesHelper = new AxesHelper(200)
-    // scene.add( axesHelper )
 
     // 物体
     const boxes = rubik.models()

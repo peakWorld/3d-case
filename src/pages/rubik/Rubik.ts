@@ -13,7 +13,6 @@ import {
   Matrix4
 } from 'three'
 import { interval } from '@utils/time'
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 
 interface Configs {
   origin: Vector3
@@ -36,7 +35,7 @@ interface State {
   intersect: Object3D /* 触摸点所在的小盒子 */
   startPoint: Vector3 /* 开始触摸点在3d坐标系中位置 */
   endPoint: Vector3 /* 结束触摸点在3d坐标系中位置 */
-  initPosIndex: PosIndex[] /* 初始盒子的顺序 */
+  initPosIndex: PosIndex[] /* 初始化小盒子的原点坐标和顺序 */
 }
 
 /* 6种方向 */
@@ -144,7 +143,6 @@ export default class Rubik {
     const order = page * size * size + index
     mesh.position.copy(position)
     mesh.userData.index = order
-    mesh.name = `box-${order}`
     this.state.initPosIndex.push({ pos: position, index: order })
     return mesh
   }

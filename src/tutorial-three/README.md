@@ -1,19 +1,17 @@
 # Threejs 案例
 
-* case1 基本要素
+* case1 基本要素、动画、阴影
 
-* case2 简单动画、物体选中 和 雾化
+* case2 雾化 和 选中
 
-* case3 阴影
+* case3 多材质、自定义shader 和 分屏
 
-* case4 材质 和 分屏
+* case4 点、popmotion动画、纹理贴图
 
-* case5 点、tween动画、纹理
+* case5 二维形状、文本、morph(形变)
 
-* case6 二维形状、svg、文本
+* case6 后期处理
 
-* case7 后期处理
+* case7 物理特效
 
-* case8 物理特效
-
-* case9 模型加载、模型动画
+* case8 模型加载、模型动画
