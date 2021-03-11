@@ -1,9 +1,9 @@
 /*
  * @Author: lyf
- * @Date: 2021-03-04 17:15:58
+ * @Date: 2021-02-19 19:28:39
  * @LastEditors: lyf
- * @LastEditTime: 2021-03-05 17:46:41
- * @Description: 二维形状、文本、morph(形变)
+ * @LastEditTime: 2021-03-11 15:08:55
+ * @Description: 后期处理
  * @FilePath: /cook-electron/Users/a58/iworkspace/3d-case/src/tutorial-three/case6/index.tsx
  */
 import React, { useRef, useEffect } from 'react';
@@ -13,23 +13,20 @@ import {
   Scene,
   PerspectiveCamera,
   AmbientLight,
-  Shape,
   Color,
   AxesHelper,
-  Mesh,
-  Path,
-  ShapeGeometry,
-  MeshBasicMaterial,
-  FontLoader,
-  TextGeometry,
-  MeshNormalMaterial,
-  Sphere,
+  TextureLoader,
   SphereGeometry,
-  Material,
-  Vector3,
-  BufferAttribute
+  MeshPhongMaterial,
+  Mesh
 } from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer'
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
+import { FilmPass } from 'three/examples/jsm/postprocessing/FilmPass'
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass'
+import { BloomPass } from 'three/examples/jsm/postprocessing/BloomPass'
+import { FilmShader } from 'three/examples/jsm/shaders/FilmShader'
 
 const ThreeCase6 = () => {
   const ref = useRef<HTMLDivElement>(null)
@@ -47,7 +44,7 @@ const ThreeCase6 = () => {
 
     // 相机
     const camera = new PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000)
-    camera.position.set(-40, 40, 30)
+    camera.position.set(40, 40, 40)
     camera.up.set(0, 1, 0)
     camera.lookAt(0, 0, 0)
     const control = new OrbitControls(camera, renderer.domElement)
@@ -55,96 +52,53 @@ const ThreeCase6 = () => {
     // 场景
     const scene = new Scene()
     // const axesHelper = new AxesHelper( 20 );
-    // scene.add( axesHelper );
+    // scene.add( axesHelper )
 
     // 光线
-    const ambient = new AmbientLight(0x404040)
+    const ambient = new AmbientLight(0xffffff)
     scene.add(ambient)
 
-    // 二维形状
-    const shape = new Shape() // 以xy轴平面(0, 0)为原点
-    shape.lineTo(10, 5)
-    shape.absarc(5, 5, 5, 0, Math.PI*2, false)
-    const rightEye = new Path()
-    rightEye.moveTo(8, 6)
-    rightEye.absellipse(7, 5, 1, 1, 0, Math.PI*2, true, 0)
-    shape.holes.push(rightEye)
-    const leftEye = new Path()
-    leftEye.moveTo(4,5)
-    leftEye.absarc(3, 5, 1, 0, Math.PI*2, true)
-    shape.holes.push(leftEye)
-    const mouth = new Path()
-    mouth.moveTo(5, 3)
-    mouth.quadraticCurveTo(6, 3, 7, 4)
-    mouth.quadraticCurveTo(6, 2, 5, 2)
-    mouth.quadraticCurveTo(4, 2, 4, 4)
-    mouth.quadraticCurveTo(4, 3, 5, 3)
-    shape.holes.push(mouth)
-    const mesh = new Mesh(
-      new ShapeGeometry(shape),
-      new MeshBasicMaterial()
-    )
-    mesh.visible = false
+    // 物体
+    const loader = new TextureLoader()
+    const map = loader.load('/assets/webgl/img/three-case7/Earth.png')
+    const specularMap = loader.load('/assets/webgl/img/three-case7/EarthSpec.png')
+    const normalMap = loader.load('/assets/webgl/img/three-case7/EarthNormal.png')
+    const geometry = new SphereGeometry(10, 40, 40)
+    const material = new MeshPhongMaterial({
+      map,
+      normalMap,
+      specularMap,
+      specular: new Color(0x4444aa)
+    })
+    const mesh = new Mesh(geometry, material)
     scene.add(mesh)
 
-    // Text
-    const loader = new FontLoader()
-    loader.load('/assets/webgl/font/helvetiker_bold.typeface.js', (font) => {
-      const geometry = new TextGeometry('Hello World!', {
-        font, // 字体
-        size: 3, // 字体高度
-        height: 0.2, // 字体厚度
-        curveSegments: 5,// 曲线处的片段数
-        bevelEnabled: true,// 是否前后面堆叠物体
-        bevelThickness: 0.2,// 堆叠物厚度
-        bevelSize: 0.2,// 堆叠物宽度
-        bevelSegments: 20// 厚度处的片段数,越大显示越圆滑
-      })
-      // 1. 材质支持形变
-      const material = new MeshNormalMaterial({ morphTargets: true, morphNormals: true })
-
-      function handleAttr (name: string) {
-        const geomAttr = geometry.getAttribute(name).clone() // 拷贝当前元素的geometry
-        const { array, count, itemSize } = geomAttr
-        const arr = []
-        for (let i = 0; i < count; i++) { // 对每个顶点坐标进行处理
-          const vector = new Vector3(
-            array[i * itemSize] + Math.random() * 3,
-            array[i * itemSize + 1] + Math.random() * 3,
-            array[i * itemSize + 2] + Math.random() * 3
-          )
-          arr.push(vector)
-        }
-        const attr = geomAttr.copyVector3sArray(arr) // 生成一个新的gemoetry
-        return attr
-      }
-
-      // 2. 添加形变数据
-      geometry.morphAttributes.position = [handleAttr('position')]
-      geometry.morphAttributes.normal = [handleAttr('normal')]
-
-      const mesh = new Mesh(geometry, material)
-      // mesh.updateMorphTargets()
-      mesh.morphTargetInfluences = [0.3] // 3. 形变程度[0-1]
-      mesh.position.set(-10, 0, 0)
-      scene.add(mesh)
-      
-      // 外接球
-      geometry.computeBoundingSphere()
-      const { center, radius } = geometry.boundingSphere as Sphere
-      const sphere = new Mesh(
-        new SphereGeometry(radius, 32, 32),
-        new MeshNormalMaterial({ wireframe: true })
-      )
-      sphere.position.copy(center.setX(center.x - 10))
-      // scene.add(sphere)
-    })
-
+    // 后期处理
+    const composer = new EffectComposer(renderer)
+    // 1. 此处使用帧缓冲, 实现屏后渲染. 生成纹理对象, 进行后期处理
+    const renderPass = new RenderPass(scene, camera)
+    composer.addPass(renderPass)
+    // 2. 使用电影特效
+    // 方式一 直接使用pass
+    // const filmPass = new FilmPass(0.8, 0.325, 256)
+    // 方式二 使用ShaderPass来生成pass(需要引入对应的shader代码)
+    const filmPass = new ShaderPass(FilmShader)
+    filmPass.uniforms.nIntensity.value = 0.8
+    filmPass.uniforms.sIntensity.value = 0.325
+    filmPass.uniforms.sCount.value = 256
+    composer.addPass(filmPass)
+    // bloomPass没有renderToScreen属性,无法显示在屏幕,
+    // 所以用new THREE.ShaderPass(THREE.CopyShader),将纹理展示在屏幕
+    // const bloomPass = new BloomPass(3, 25, 5.0, 256)
+    // composer.addPass(bloomPass)
+    // composer.addPass(composer.copyPass)
+    
     // 动画
     function animate () {
       stats.update()
       control.update()
-      renderer.render(scene, camera)
+
+      composer.render()
 
       requestAnimationFrame(animate)
     }

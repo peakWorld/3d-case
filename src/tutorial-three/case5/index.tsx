@@ -1,36 +1,35 @@
 /*
  * @Author: lyf
- * @Date: 2021-02-19 19:28:39
+ * @Date: 2021-03-04 17:15:58
  * @LastEditors: lyf
- * @LastEditTime: 2021-03-08 16:14:41
- * @Description: 点、popmotion动画、纹理贴图
+ * @LastEditTime: 2021-03-11 15:36:57
+ * @Description: 二维形状、文本、morph(形变)
  * @FilePath: /cook-electron/Users/a58/iworkspace/3d-case/src/tutorial-three/case5/index.tsx
  */
-import React, { useRef, useEffect } from 'react'
-import { animate, steps } from 'popmotion'
+import React, { useRef, useEffect } from 'react';
 import { createStats } from '@utils/help'
 import {
   WebGLRenderer,
   Scene,
   PerspectiveCamera,
   AmbientLight,
-  BufferGeometry,
-  SphereGeometry,
-  Float32BufferAttribute,
-  PointsMaterial,
-  TextureLoader,
-  Points,
+  Shape,
+  Color,
   AxesHelper,
-  AdditiveBlending,
-  Vector3,
-  CubeTextureLoader,
-  BoxGeometry,
   Mesh,
-  MeshBasicMaterial
+  Path,
+  ShapeGeometry,
+  MeshBasicMaterial,
+  FontLoader,
+  TextGeometry,
+  MeshNormalMaterial,
+  Sphere,
+  SphereGeometry,
+  Material,
+  Vector3,
+  BufferAttribute
 } from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
-import { GUI } from 'three/examples/jsm/libs/dat.gui.module.js';
-import './index.scss'
 
 const ThreeCase5 = () => {
   const ref = useRef<HTMLDivElement>(null)
@@ -39,179 +38,118 @@ const ThreeCase5 = () => {
     const dom = ref.current as HTMLDivElement
     const stats = createStats({ dom })
 
-    const w = window.innerWidth
-    const h = window.innerHeight
-    const hh = Math.ceil(h / 2)
-
     // 渲染器
     const renderer = new WebGLRenderer({ antialias: true })
-    renderer.setSize(w, h)
+    renderer.setSize(window.innerWidth, window.innerHeight)
+    renderer.setClearColor(new Color(0xeeeeee), 0.5)
     renderer.setPixelRatio(window.devicePixelRatio)
-    renderer.setScissorTest(true) // 开启剪裁检测
     dom.appendChild(renderer.domElement)
 
-    function sceneTop () {
-      // 相机
-      const camera = new PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000)
-      camera.position.set(3, 3, 3);
-      camera.up.set(0, 1, 0);
-      camera.lookAt(0, 0, 0)
-      const control = new OrbitControls(camera, renderer.domElement)
+    // 相机
+    const camera = new PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000)
+    camera.position.set(-40, 40, 30)
+    camera.up.set(0, 1, 0)
+    camera.lookAt(0, 0, 0)
+    const control = new OrbitControls(camera, renderer.domElement)
 
-      // 场景
-      const scene = new Scene()
-      const axesHelper = new AxesHelper( 20 );
-      scene.add( axesHelper );
+    // 场景
+    const scene = new Scene()
+    // const axesHelper = new AxesHelper( 20 );
+    // scene.add( axesHelper );
 
-      // 光线
-      const ambient = new AmbientLight(0x404040)
-      scene.add(ambient)
+    // 光线
+    const ambient = new AmbientLight(0x404040)
+    scene.add(ambient)
 
-      // 点和popmotion动画
-      // const geometry = new SphereGeometry(1, 64, 64)
-      // const material = new PointsMaterial({ size: 0.01 })
-      // const points = new Points(geometry, material)
-      // scene.add(points)
-      // animate({
-      //   from: 0,
-      //   to: 1,
-      //   duration: 6000,
-      //   repeat: Infinity,
-      //   repeatType: 'reverse',
-      //   ease: steps(30),
-      //   onUpdate: pos => {
-      //     // material.color.setRGB(pos, pos, pos)
-      //     material.color.setHex(0xffffff * pos)
-      //   }
-      // })
+    // 二维形状
+    const shape = new Shape() // 以xy轴平面(0, 0)为原点
+    shape.lineTo(10, 5)
+    shape.absarc(5, 5, 5, 0, Math.PI*2, false)
+    const rightEye = new Path()
+    rightEye.moveTo(8, 6)
+    rightEye.absellipse(7, 5, 1, 1, 0, Math.PI*2, true, 0)
+    shape.holes.push(rightEye)
+    const leftEye = new Path()
+    leftEye.moveTo(4,5)
+    leftEye.absarc(3, 5, 1, 0, Math.PI*2, true)
+    shape.holes.push(leftEye)
+    const mouth = new Path()
+    mouth.moveTo(5, 3)
+    mouth.quadraticCurveTo(6, 3, 7, 4)
+    mouth.quadraticCurveTo(6, 2, 5, 2)
+    mouth.quadraticCurveTo(4, 2, 4, 4)
+    mouth.quadraticCurveTo(4, 3, 5, 3)
+    shape.holes.push(mouth)
+    const mesh = new Mesh(
+      new ShapeGeometry(shape),
+      new MeshBasicMaterial()
+    )
+    mesh.visible = false
+    scene.add(mesh)
 
-      // 环境贴图
-      camera.position.set(20, 20, 20)
-      scene.background = new CubeTextureLoader()
-        .setPath('/assets/webgl/img/three-case5/parliament/')
-        .load([
-          'posx.jpg', 'negx.jpg', 'posy.jpg',
-          'negy.jpg', 'posz.jpg' , 'negz.jpg'
-        ])
-      const sphere = new Mesh(
-        new SphereGeometry(5, 20, 20),
-        new MeshBasicMaterial({ envMap: scene.background })
-      )
-      scene.add(sphere)
-      return { scene, camera, control }
-    }
-
-    function sceneBottom () {
-      // 相机
-      const camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
-      // camera.position.z = 400
-      camera.position.set(70, 22, 106)
-      camera.up.set(0, 1, 0)
-      camera.lookAt(0, 0, 0)
-      const control = new OrbitControls(camera, renderer.domElement)
-      control.maxZoom = 1.5
-      control.minZoom = 0.5
-
-      // 场景
-      const scene = new Scene()
-      // const axesHelper = new AxesHelper( 20 );
-      // scene.add( axesHelper );
-
-      // 光线
-      const ambient = new AmbientLight(0x404040)
-      scene.add(ambient)
-
-      const textureLoader = new TextureLoader()
-      // 雨点
-      const textures = [
-        textureLoader.load('/assets/webgl/img/three-case5/raindrop-1.png'),
-        textureLoader.load('/assets/webgl/img/three-case5/raindrop-2.png'),
-        textureLoader.load('/assets/webgl/img/three-case5/raindrop-3.png'),
-      ]
-      // const textures = [
-      //   textureLoader.load('/assets/webgl/img/three-case5/snowflake1.png'),
-      //   textureLoader.load('/assets/webgl/img/three-case5/snowflake2.png'),
-      //   textureLoader.load('/assets/webgl/img/three-case5/snowflake3.png'),
-      //   textureLoader.load('/assets/webgl/img/three-case5/snowflake4.png'),
-      //   textureLoader.load('/assets/webgl/img/three-case5/snowflake5.png'),
-      // ]
-      const geometry = new BufferGeometry()
-      const vertices = []
-      for (let i = 0, len = 6000 * textures.length; i < len; i++) {
-        const x = Math.random() * 400 - 200
-        const y = Math.random() * 400 - 200
-        const z = Math.random() * 400 - 200
-        vertices.push(x, y, z)
-      }
-      geometry.setAttribute('position', new Float32BufferAttribute(vertices, 3))
-
-      for (let i = 0, len = textures.length; i < len; i++) {
-        const material = new PointsMaterial({
-          color: 0xffffff,
-          size: Math.random() * i,
-          map: textures[i],
-          transparent:true, //开启 blending才能其效果
-          blending: AdditiveBlending //除去png黑色背景
-        })
-        const point = new Points(geometry, material)
-        scene.add(point)
-      }
-      
-      return { scene, camera, control }
-    }
-
-    const top = sceneTop()
-    const bottom = sceneBottom()
-    
-    // 动画
-    function tick () {
-      stats.update()
-      top.control.update()
-      bottom.control.update()
-
-      // 渲染上半屏
-      renderer.setScissor(0, hh, w, hh)
-      renderer.setViewport(0, hh, w, hh)
-      renderer.setClearColor(0xBCD48F, 1);
-      renderer.render(top.scene, top.camera)
-
-      // 渲染下半屏
-      bottom.scene.traverse((obj) => {
-        if (obj instanceof Points) {
-          // const res = []
-          // const { array, count, itemSize } = obj.geometry.getAttribute('position').clone()
-          // for (let i = 0; i < count; i++) {
-          //   let y = array[i * itemSize + 1] - Math.random() * 0.3
-          //   y = y > -200 ? y : Math.random() * 400 - 200
-          //   const vector = new Vector3(
-          //     array[i * itemSize],
-          //     y,
-          //     array[i * itemSize + 2]
-          //   )
-          //   res.push(vector)
-          // }
-          // obj.geometry.setFromPoints(res)
-
-          const { array, count, itemSize } = obj.geometry.getAttribute('position')
-          const arr = array as Array<number>
-          for (let i = 0; i < count; i++) {
-            const y = array[i * itemSize + 1] - Math.random() * 0.3
-            arr[i * itemSize + 1] = y > -200 ? y : Math.random() * 400 - 200
-          }
-          obj.geometry.attributes.position.needsUpdate = true
-          obj.geometry.setDrawRange(0, Infinity)
-        }
+    // Text
+    const loader = new FontLoader()
+    loader.load('/assets/webgl/font/helvetiker_bold.typeface.js', (font) => {
+      const geometry = new TextGeometry('Hello World!', {
+        font, // 字体
+        size: 3, // 字体高度
+        height: 0.2, // 字体厚度
+        curveSegments: 5,// 曲线处的片段数
+        bevelEnabled: true,// 是否前后面堆叠物体
+        bevelThickness: 0.2,// 堆叠物厚度
+        bevelSize: 0.2,// 堆叠物宽度
+        bevelSegments: 20// 厚度处的片段数,越大显示越圆滑
       })
+      // 1. 材质支持形变
+      const material = new MeshNormalMaterial({ morphTargets: true, morphNormals: true })
 
-      renderer.setScissor(0, 0, w, hh)
-      renderer.setViewport(0, 0, w, hh)
-      renderer.setClearColor(0xffffff, 0);
-      renderer.render(bottom.scene, bottom.camera)
+      function handleAttr (name: string) {
+        const geomAttr = geometry.getAttribute(name).clone() // 拷贝当前元素的geometry
+        const { array, count, itemSize } = geomAttr
+        const arr = []
+        for (let i = 0; i < count; i++) { // 对每个顶点坐标进行处理
+          const vector = new Vector3(
+            array[i * itemSize] + Math.random() * 3,
+            array[i * itemSize + 1] + Math.random() * 3,
+            array[i * itemSize + 2] + Math.random() * 3
+          )
+          arr.push(vector)
+        }
+        const attr = geomAttr.copyVector3sArray(arr) // 生成一个新的gemoetry
+        return attr
+      }
 
-      requestAnimationFrame(tick)
+      // 2. 添加形变数据
+      geometry.morphAttributes.position = [handleAttr('position')]
+      geometry.morphAttributes.normal = [handleAttr('normal')]
+
+      const mesh = new Mesh(geometry, material)
+      // mesh.updateMorphTargets()
+      mesh.morphTargetInfluences = [0.3] // 3. 形变程度[0-1]
+      mesh.position.set(-10, 0, 0)
+      scene.add(mesh)
+      
+      // 外接球
+      geometry.computeBoundingSphere()
+      const { center, radius } = geometry.boundingSphere as Sphere
+      const sphere = new Mesh(
+        new SphereGeometry(radius, 32, 32),
+        new MeshNormalMaterial({ wireframe: true })
+      )
+      sphere.position.copy(center.setX(center.x - 10))
+      // scene.add(sphere)
+    })
+
+    // 动画
+    function animate () {
+      stats.update()
+      control.update()
+      renderer.render(scene, camera)
+
+      requestAnimationFrame(animate)
     }
 
-    tick()
+    animate()
 
     return () => {
       const gui = document.querySelector('.dg.ac')

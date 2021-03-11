@@ -1,109 +1,185 @@
 /*
  * @Author: lyf
- * @Date: 2021-02-02 16:54:55
+ * @Date: 2021-02-19 19:28:39
  * @LastEditors: lyf
- * @LastEditTime: 2021-03-04 17:18:10
- * @Description: 阴影
+ * @LastEditTime: 2021-03-11 10:44:50
+ * @Description: 多材质、自定义shader 和 分屏
  * @FilePath: /cook-electron/Users/a58/iworkspace/3d-case/src/tutorial-three/case3/index.tsx
  */
-import React, { useEffect, useRef } from 'react'
+import React, { useRef, useEffect } from 'react';
 import { createStats } from '@utils/help'
 import {
   WebGLRenderer,
   Scene,
   PerspectiveCamera,
   AmbientLight,
-  SpotLight,
+  DirectionalLight,
+  BufferGeometry,
   BoxGeometry,
-  PlaneGeometry,
+  BufferAttribute,
   SphereGeometry,
+  MeshBasicMaterial,
+  MeshNormalMaterial,
   MeshLambertMaterial,
+  ShaderMaterial,
   Mesh,
   Color,
+  Vector3,
   AxesHelper,
-  PCFSoftShadowMap
 } from 'three'
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
+import { VertexNormalsHelper } from 'three/examples/jsm/helpers/VertexNormalsHelper'
+import { position, color, normal, indexData, vShader, fShader } from './data'
 
 const ThreeCase3 = () => {
   const ref = useRef<HTMLDivElement>(null)
-
+  
   useEffect(() => {
     const dom = ref.current as HTMLDivElement
     const stats = createStats({ dom })
-    let step = 0
-    
-    // 渲染
-    const renderer = new WebGLRenderer({
-      antialias: true
-    })
-    renderer.setSize(window.innerWidth, window.innerHeight)
-    renderer.setClearColor(new Color(0xeeeeee), 0.5)
+    const w = window.innerWidth
+    const h = window.innerHeight
+    const hh = Math.ceil(h / 2)
+
+    // 渲染器
+    const renderer = new WebGLRenderer({ antialias: true })
+    renderer.setSize(w, h)
     renderer.setPixelRatio(window.devicePixelRatio)
-    // 开启阴影
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = PCFSoftShadowMap;
+    renderer.setScissorTest(true) // 开启剪裁检测
     dom.appendChild(renderer.domElement)
 
-    // 相机
-    const camera = new PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000)
-    camera.position.set(-40, 40, 30)
-    camera.up.set(0, 1, 0);
-    camera.lookAt(0, 0, 0)
+    function sceneTop () {
+      // 相机
+      const camera = new PerspectiveCamera(45, w / hh, 0.1, 1000)
+      camera.position.set(30, 30, 30)
+      camera.up.set(0, 1, 0);
+      camera.lookAt(0, 0, 0)
+      const control = new OrbitControls(camera, renderer.domElement)
 
-    // 场景
-    const scene = new Scene()
-    const axesHelper = new AxesHelper( 20 );
-    scene.add( axesHelper );
+      // 场景
+      const scene = new Scene()
+      const axesHelper = new AxesHelper( 20 )
+      scene.add( axesHelper )
 
-    // 光线
-    const ambient = new AmbientLight(0x404040)
-    const spot = new SpotLight(0xffffff)
-    spot.position.set(-40, 60, 10)
-    spot.castShadow = true
-    // 值越大(必须为2的倍数), 阴影质量越好
-    spot.shadow.mapSize.width = 2048;
-    spot.shadow.mapSize.height = 2048;
-    scene.add(ambient)
-    scene.add(spot)
+      // 光线
+      const ambient = new AmbientLight(0x404040)
+      scene.add(ambient)
+      
+      // 物体
+      const box = new Mesh(
+        new BoxGeometry(4, 4, 4),
+        [
+          new MeshLambertMaterial({ color: 0xffff00 }),
+          new MeshBasicMaterial({ color: 0xff0000 }), // basic材质不受光照影响
+          new MeshBasicMaterial({ color: 0xffffff }),
+          new MeshBasicMaterial({ color: 0x00ff00 }),
+          new MeshBasicMaterial({ color: 0x00ffff }),
+          new MeshBasicMaterial({ color: 0x000000 }),
+        ]
+      )
+      box.position.set(-6, 0, 0)
+      scene.add(box)
 
-    // 物体导入
-    const plane = new Mesh(
-      new PlaneGeometry(60, 20, 1, 1),
-      new MeshLambertMaterial({ color: 0xcccccc })
-    )
-    plane.rotateX(-Math.PI / 2)
-    plane.position.set(15, 0, 0)
-    plane.receiveShadow = true
+      const geometry = new SphereGeometry(4, 20, 20)
+      const material = new MeshNormalMaterial()
+      const sphere = new Mesh(geometry, material)
+      sphere.position.set(6, 0, 0)
+      scene.add(sphere)
+      const helper = new VertexNormalsHelper(sphere, 2, 0x00ff00)
+      scene.add(helper)
 
-    const box = new Mesh(
-      new BoxGeometry(4, 4, 4),
-      new MeshLambertMaterial({ color: 0xff0000 })
-    )
-    box.position.set(-4, 3, 0)
-    box.castShadow = true
+      return { scene, camera, control, helper }
+    }
 
-    const sphere = new Mesh(
-      new SphereGeometry( 4, 20, 20 ),
-      new MeshLambertMaterial({ color: 0x7777ff })
-    );
-    sphere.position.set(20, 4, 2)
-    sphere.castShadow = true
+    function sceneBottom () {
+      // 相机
+      const camera = new PerspectiveCamera(45, w / hh, 0.1, 1000)
+      camera.position.set(20, 40, 30)
+      camera.up.set(0, 1, 0);
+      camera.lookAt(0, 0, 0)
+      const control = new OrbitControls(camera, renderer.domElement)
 
-    scene.add(box)
-    scene.add(plane)
-    scene.add(sphere)
+      // 场景
+      const scene = new Scene()
+      // const axesHelper = new AxesHelper( 20 );
+      // scene.add( axesHelper );
 
+      // 光线
+      const ambient = new AmbientLight(0x404040)
+      scene.add(ambient)
+      const light = new DirectionalLight(0xffffff)
+			light.position.set(1, 1, 1)
+      scene.add(light)
+      
+      // 物体
+      const geometry = new BufferGeometry()
+      geometry.setAttribute('position', new BufferAttribute(position, 3))
+        .setAttribute('color', new BufferAttribute(color, 3))
+        .setAttribute('normal', new BufferAttribute(normal, 3))
+        .setIndex( new BufferAttribute(indexData, 1) )
+      // geometry.index = new Uint16BufferAttribute(indexData, 1)
+      
+      // 自定shader
+      const meterial = new ShaderMaterial({
+        uniforms: {
+          light: {
+            value: {
+              color: new Color(0xffffff),
+              position: new Vector3(1, 1, 1)
+            }
+          }
+        },
+        vertexColors: true,
+        vertexShader: vShader,
+        fragmentShader: fShader
+      })
+      const box1 = new Mesh(geometry, meterial)
+      box1.position.set(-2, 0, 0)
+      box1.name = "box-1"
+      const box2 = new Mesh(geometry, new MeshLambertMaterial({ color: 0xffff00 }))
+      box2.position.set(2, 0, 0)
+      box2.name = "box-2"
+
+      scene.add(box1)
+      scene.add(box2)
+      return { scene, camera, control }
+    }
+
+
+    const top = sceneTop()
+    const bottom = sceneBottom()
+
+    // 动画
     function animate () {
-      renderer.render(scene, camera)
       stats.update()
+      top.control.update()
+      top.helper.update()
+      bottom.control.update()
+      
+      // 渲染上半屏
+      renderer.setScissor(0, hh, w, hh)
+      renderer.setViewport(0, hh, w, hh)
+      renderer.setClearColor(0xBCD48F, 1);
+      renderer.render(top.scene, top.camera)
 
-      box.rotation.x += 0.02
-      box.rotation.y += 0.02
-      box.rotation.z += 0.02
+      // 渲染下半屏
+      renderer.setScissor(0, 0, w, hh)
+      renderer.setViewport(0, 0, w, hh)
+      renderer.setClearColor(0x8FBCD4, 1);
+      const box1 = bottom.scene.getObjectByName('box-1')
+      if (box1) {
+        box1.rotation.x += 0.01
+        box1.rotation.y += 0.01
+        box1.rotation.z += 0.01
+      }
 
-      step += 0.02
-      sphere.position.x = 20 + 10 * Math.cos(step); 
-      sphere.position.y = 2 + 10 * Math.abs(Math.sin(step));
+      const box2 = bottom.scene.getObjectByName('box-2')
+      if (box2) {
+        box2.rotation.x += 0.02
+        box2.rotation.y += 0.02
+        box2.rotation.z += 0.02
+      }
+      renderer.render(bottom.scene, bottom.camera)
 
       requestAnimationFrame(animate)
     }
