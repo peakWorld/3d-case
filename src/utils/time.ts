@@ -2,7 +2,7 @@
  * @Author: lyf
  * @Date: 2021-03-10 11:03:54
  * @LastEditors: lyf
- * @LastEditTime: 2021-03-10 17:23:39
+ * @LastEditTime: 2021-03-10 19:28:05
  * @Description: 时间操作相关
  * @FilePath: /cook-electron/Users/a58/iworkspace/3d-case/src/utils/time.ts
  */
@@ -35,7 +35,8 @@ export function interval (duration: number, tick: (percent: number) => void, aft
         const percent = step / duration
         tick(percent)
       }
-      setTimeout(() => after && after(), 100)
+      setTimeout(() => after && after(), duration / 2 > 200 ? 200 : duration / 2)
+      cancelAnimationFrame(timer)
     }
   }
   timer = requestAnimationFrame(animate)

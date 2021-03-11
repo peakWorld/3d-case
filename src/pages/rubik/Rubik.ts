@@ -283,10 +283,10 @@ export default class Rubik {
         break
       case Direction.y: // 绕着y轴转动
         {
-          const tmp = Math.floor((index % (size * size)) / 3)
+          const tmp = Math.floor((index % (size * size)) / size)
           boxes.forEach((box) => {
             const { index } = box.userData
-            const calIndex = Math.floor((index % (size * size)) / 3)
+            const calIndex = Math.floor((index % (size * size)) / size)
             if (calIndex === tmp) {
               cubes.push(box)
             }
@@ -311,7 +311,7 @@ export default class Rubik {
 
     // 转动
     interval(
-      500,
+      250,
       (percent) => {
         const rand = Math.PI / 2 * (plus ? -percent : percent)
         const matrix = this.rotateAroundWorldAxis(this.globalOrigin, roateAxis, rand)
@@ -320,8 +320,9 @@ export default class Rubik {
         })
       },
       () => {
-        this.updateBoxesIndex()
         this.state.isRotating = false
+        this.updateBoxesIndex()
+        console.log('done....')
       }
     )
   }
