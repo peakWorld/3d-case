@@ -2,7 +2,7 @@
  * @Author: lyf
  * @Date: 2021-02-19 19:28:39
  * @LastEditors: lyf
- * @LastEditTime: 2021-03-11 16:02:41
+ * @LastEditTime: 2021-03-12 11:02:03
  * @Description: 点、popmotion动画、纹理贴图
  * @FilePath: /cook-electron/Users/a58/iworkspace/3d-case/src/tutorial-three/case4/index.tsx
  */
@@ -208,7 +208,6 @@ const ThreeCase4 = () => {
             arr[i * itemSize + 1] = y > -200 ? y : Math.random() * 400 - 200
           }
           obj.geometry.attributes.position.needsUpdate = true
-          obj.geometry.setDrawRange(0, Infinity)
         }
       })
 
