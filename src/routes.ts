@@ -2,14 +2,13 @@
  * @Author: lyf
  * @Date: 2021-02-01 10:46:39
  * @LastEditors: lyf
- * @LastEditTime: 2021-03-12 19:15:05
+ * @LastEditTime: 2021-03-15 19:22:17
  * @Description: In User Settings Edit
  * @FilePath: /cook-electron/Users/a58/iworkspace/3d-case/src/routes.ts
  */
 import { RouteProps } from 'react-router-dom'
 import * as pages from './pages'
 import * as tutorialThree from './tutorial-three'
-import * as tutorialReact from './tutorial-react'
 
 export const routes = new Map<string, RouteProps>()
 
@@ -23,12 +22,7 @@ routes.set('1006', { path: '/three/case6', component: tutorialThree.Case6, exact
 // routes.set('1007', { path: '/three/case7', component: tutorialThree.Case7, exact: true })
 // routes.set('1008', { path: '/three/case8', component: tutorialThree.Case8, exact: true })
 
-// 2. tutorial-react
-routes.set('2001', { path: '/react/case1', component: tutorialReact.Case1, exact: true })
-routes.set('2001', { path: '/react/case2', component: tutorialReact.Case2, exact: true })
-routes.set('2001', { path: '/react/case3', component: tutorialReact.Case3, exact: true })
-
-// 3. cases
-routes.set('3001', { path: '/3d/rubik', component: pages.ThreejsRubik, exact: true })
-routes.set('3002', { path: '/3d/points', component: pages.ThreejsPoints, exact: true })
-routes.set('3003', { path: '/3d/collision', component: pages.ThreejsCollision, exact: true })
+// 2. cases
+routes.set('2001', { path: '/3d/rubik', component: pages.ThreejsRubik, exact: true })
+routes.set('2002', { path: '/3d/points', component: pages.ThreejsPoints, exact: true })
+routes.set('2003', { path: '/3d/collision', component: pages.ThreejsCollision, exact: true })
