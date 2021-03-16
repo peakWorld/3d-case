@@ -2,7 +2,7 @@
  * @Author: lyf
  * @Date: 2021-03-04 17:15:58
  * @LastEditors: lyf
- * @LastEditTime: 2021-03-11 15:36:57
+ * @LastEditTime: 2021-03-16 20:02:41
  * @Description: 二维形状、文本、morph(形变)
  * @FilePath: /cook-electron/Users/a58/iworkspace/3d-case/src/tutorial-three/case5/index.tsx
  */
@@ -47,7 +47,7 @@ const ThreeCase5 = () => {
 
     // 相机
     const camera = new PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000)
-    camera.position.set(-40, 40, 30)
+    camera.position.set(0, 0, 60)
     camera.up.set(0, 1, 0)
     camera.lookAt(0, 0, 0)
     const control = new OrbitControls(camera, renderer.domElement)
@@ -90,7 +90,7 @@ const ThreeCase5 = () => {
     // Text
     const loader = new FontLoader()
     loader.load('/assets/webgl/font/helvetiker_bold.typeface.js', (font) => {
-      const geometry = new TextGeometry('Hello World!', {
+      const geometry = new TextGeometry('Hello World', {
         font, // 字体
         size: 3, // 字体高度
         height: 0.2, // 字体厚度
@@ -127,6 +127,7 @@ const ThreeCase5 = () => {
       // mesh.updateMorphTargets()
       mesh.morphTargetInfluences = [0.3] // 3. 形变程度[0-1]
       mesh.position.set(-10, 0, 0)
+      mesh.visible = true
       scene.add(mesh)
       
       // 外接球
@@ -137,7 +138,8 @@ const ThreeCase5 = () => {
         new MeshNormalMaterial({ wireframe: true })
       )
       sphere.position.copy(center.setX(center.x - 10))
-      // scene.add(sphere)
+      sphere.visible = true
+      scene.add(sphere)
     })
 
     // 动画

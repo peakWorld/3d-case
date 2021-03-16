@@ -2,7 +2,7 @@
  * @Author: lyf
  * @Date: 2021-02-19 19:28:39
  * @LastEditors: lyf
- * @LastEditTime: 2021-03-12 11:02:03
+ * @LastEditTime: 2021-03-16 19:46:25
  * @Description: 点、popmotion动画、纹理贴图
  * @FilePath: /cook-electron/Users/a58/iworkspace/3d-case/src/tutorial-three/case4/index.tsx
  */
@@ -85,7 +85,7 @@ const ThreeCase4 = () => {
       )
       box.name = "box"
       box.position.setX(6)
-      box.geometry.setDrawRange(0, 12) // 只绘制部分内容
+      box.geometry.setDrawRange(0, 9) // 只绘制部分内容
       scene.add(box)
       
       animate({ // popmotion动画

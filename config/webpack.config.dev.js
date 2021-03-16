@@ -3,10 +3,11 @@ const webpack = require('webpack')
 const path = require('path')
 const defaultConfig = require('./webpack.config.base.js')
 const { OUTPUT_PATH, isLocal } = require('./constants')
+const { getIpAddress } = require('./utils')
 
 // 开发配置
 const devServer = {
-  host: '0.0.0.0',
+  host: getIpAddress(),
   port: 9888,
   hot: true,
   open: 'Google Chrome',

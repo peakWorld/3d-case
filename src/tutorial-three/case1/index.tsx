@@ -2,7 +2,7 @@
  * @Author: lyf
  * @Date: 2021-02-02 16:54:55
  * @LastEditors: lyf
- * @LastEditTime: 2021-03-11 10:20:22
+ * @LastEditTime: 2021-03-16 14:59:46
  * @Description: 基本要素、动画、阴影
  * @FilePath: /cook-electron/Users/a58/iworkspace/3d-case/src/tutorial-three/case1/index.tsx
  */
@@ -52,13 +52,14 @@ const ThreeCase1 = () => {
 
     // 场景
     const scene = new Scene()
+    window.scene = scene
     const axesHelper = new AxesHelper( 20 );
     scene.add( axesHelper );
 
     // 光线
     const ambient = new AmbientLight(0x404040)
     const spot = new SpotLight(0xffffff)
-    spot.position.set(-40, 60, 10)
+    spot.position.set(30, 60, 10)
     spot.castShadow = true
     // 值越大(必须为2的倍数), 阴影质量越好
     spot.shadow.mapSize.width = 2048;
@@ -73,6 +74,7 @@ const ThreeCase1 = () => {
     )
     plane.rotateX(-Math.PI / 2)
     plane.position.set(15, 0, 0)
+    plane.name = 'plane'
     plane.receiveShadow = true
 
     const box = new Mesh(
@@ -80,6 +82,7 @@ const ThreeCase1 = () => {
       new MeshLambertMaterial({ color: 0xff0000 })
     )
     box.position.set(-4, 3, 0)
+    box.name = 'box'
     box.castShadow = true
 
     const sphere = new Mesh(
@@ -87,6 +90,7 @@ const ThreeCase1 = () => {
       new MeshLambertMaterial({ color: 0x7777ff })
     );
     sphere.position.set(20, 4, 2)
+    sphere.name = 'sphere'
     sphere.castShadow = true
 
     scene.add(box)
